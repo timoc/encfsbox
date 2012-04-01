@@ -1,4 +1,6 @@
 #!/bin/bash
+# (c) Tim O'Callaghan 2012
+
 # parse command line
 CMD=$1
 # exit if using an ininitialised variable
@@ -61,7 +63,7 @@ if [ -e "${MNT_SEARCH}" ] ; then
             MNT_NAME=$(basename ${ENCFS})
             MNT_NAME="${HOME}/${MNT_NAME/enc_/}"
             MNTED=$(mount | grep "${MNT_NAME}")
-            FOUND_CONFLICTED="$(find ${ENCFS} -name "*conflict*" -exec sh -c 'if true; then ls -l "$1"; fi' -- {} \;)"
+            FOUND_CONFLICTED="$(find ${ENCFS} -name "*conflicted*" -exec sh -c 'if true; then ls -l "$1"; fi' -- {} \;)"
             case "${_CMD}" in
                 mount)
                     if [[ ! -z "${FOUND_CONFLICTED}" ]] ; then
@@ -154,16 +156,29 @@ fi
 
 if [ ! -z $_USAGE} ] ; then
     echo <<EOF 
-usage: $0 <status|mount|umount|refresh>
+usage: $0 <status|mount|umount|refresh|conflicts>
 
-mount/unmount dropbox encfs filesystems. this script lokos in the
-dropbox for directories prefixed with enc_<dirname> and mounts the
-encfs filesystems as ~/<dirname>. if enc_<dirname> is not an encfs
-filesystem it will initialise an encfs filesystem in that directory.
+mount/unmount dropbox encfs filesystems, while checking for
+conflicts. this script looks in the dropbox for directories prefixed
+with enc_<dirname> and mounts the encfs filesystems as ~/<dirname>. If
+enc_<dirname> is not an encfs filesystem it will prompt you to
+initialise an encfs filesystem in that directory.
 
-It defaults to searching ${MNT_SEARCH_DEFAULT}, but this can be
-changed by using the DROPBOX_DIR environmental variable. You can set
-it in your bashrc or set it like this:
+Dropbox conflict resolution is a problem when using encfs. The dropbox
+mechanism of adding a conflict notification to the end of the
+filename, breaks its encfs filename encoding, and so encfs ignores
+it. 
+
+When this script is run for conflict resolution, it will perform a
+rename of the broken encfs filename, so that it will appear properly
+in the decoded mount, e.g. if there is a conflict for 'filename', it
+will rename the conflicyed file so that it creates the file "filename
+(dummy conflicted copy 2012-03-27)" in the encfs mounted filesystem.
+
+This script defaults to searching ${MNT_SEARCH_DEFAULT} for the encfs
+root filesystems, but this can be changed by using the DROPBOX_DIR
+environmental variable. If you can not set it in your bashrc, you can
+specify it like this:
 
 DROPBOX_DIR=~/Dropbox $0 mount
 
@@ -172,6 +187,7 @@ status - display status of encfs mounts
 mount - mount/create encfs filesystems
 umount - unmount encfs filesystems
 refresh - silently check status and mount/create encfs filesystems if unmounted.
+conflicts - perform conflicted copy file resolution.
 
 EOF
 fi
