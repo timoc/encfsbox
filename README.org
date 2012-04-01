@@ -1,33 +1,72 @@
-usage: encfsbox <status|mount|umount|refresh|conflicts>
-
-mount/unmount dropbox encfs filesystems, while checking for
-conflicts. this script looks in the dropbox for directories prefixed
-with enc_<dirname> and mounts the encfs filesystems as ~/<dirname>. If
-enc_<dirname> is not an encfs filesystem it will prompt you to
-initialise an encfs filesystem in that directory.
-
-Dropbox conflict resolution is a problem when using encfs. The dropbox
-mechanism of adding a conflict notification to the end of the
-filename, breaks its encfs filename encoding, and so encfs ignores
-it. 
-
-When this script is run for conflict resolution, it will perform a
-rename of the broken encfs filename, so that it will appear properly
-in the decoded mount, e.g. if there is a conflict for 'filename', it
-will rename the conflicyed file so that it creates the file "filename
-(dummy conflicted copy 2012-03-27)" in the encfs mounted filesystem.
-
-This script defaults to searching ${MNT_SEARCH_DEFAULT} for the encfs
-root filesystems, but this can be changed by using the DROPBOX_DIR
-environmental variable. If you can not set it in your bashrc, you can
-specify it like this:
-
-DROPBOX_DIR=~/Dropbox $0 mount
+* encfsbox - a dropbox + encfs filesystem manager 
 
 Commands:
-status - display status of encfs mounts
-mount - mount/create encfs filesystems
-umount - unmount encfs filesystems
-refresh - silently check status and mount/create encfs filesystems if unmounted.
-conflicts - perform conflicted copy file resolution.
+  status    - display status of encfs mounts
+  refresh   - silently mount and check status
+  mount     - mount/create encfs filesystem(s)
+  umount    - unmount encfs filesystem(s)
+  conflicts - perform dropbox 'conflicted copy' file resolution.
+
+This README assumes you know what encfs is. In this README a 'raw
+encfs' refers to the encrypted directory that encfs mounts, and a
+'mounted encfs' refers to the fuse decrypted mounted directory.
+
+encfsbox defaults to searching ~/.dropbox_enc/Dropbox for the encfs
+root filesystem(s), but this can be changed by using the DROPBOX_DIR
+environmental variable. If you can not set it in your bashrc, you can
+specify it using the shell syntax. For example to mount encfs
+filesystem(s) in the directories ~/Dropbox/enc_* you would use:
+
+DROPBOX_DIR=~/Dropbox encfsbox mount
+
+encfsbox can also be used to manage non dropbox encfs filesystem(s) by
+setting the environmental variable $DROPBOX_COMMAND to "true", but
+that has not been extensively tested.
+
+- status
+  This command prints the status of the dropbox demon, and the
+  mounted/unmounted and conflicted file status of the encfs
+  filesystem(s) it finds in the $DROPBOX_DIR directory.
+
+- refresh
+  This command was designed specifically for use from the .bashrc. The
+  first time .bashrc is called, it will prompt for the passwords to
+  mount any raw encfs it finds unmounted, and display any conflict
+  warnings, otherwise it is silent. *note* As i use guake on my
+  desktop and have it auto-start, the encfs password prompts are always
+  in my guake window, as it is the first use of my .bashrc.
+
+- mount
+  This command looks in the $DROPBOX_DIR for directories prefixed with
+  enc_<dirname> and mounts the raw encfs as ~/<dirname>. If
+  enc_<dirname> is not a raw encfs, it will prompt you to
+  initialise/create a raw encfs in the enc_<dirname> directory.
+
+  For example, if the directory $DROPBOX_DIR/enc_mysecrets exists, and
+  is a raw encfs, it will mount it at $HOME/mysecrets. If
+  enc_mysecrets exists and is not a raw encfs, it will print some
+  encfs filesystem(s)(s) creation hints, and attempt to create a raw encfs
+  in $DROPBOX_DIR/enc_mysecrets before mounting it.
+
+  The mount operation will also checks to see if dropbox has created
+  any "conflicted copy" files in the encoded encfs filesystem, and
+  prints a warning. See the command 'conflicts' for more information
+  on conflict resolution.
+
+- unmount 
+  This command looks in the $DROPBOX_DIR for directories prefixed with
+  enc_<dirname> and calls fuse to unmount the mounted encfs directory
+  at ~/<dirname>
+
+- conflicts
+  The normal dropbox conflict resolution process causes a problem when
+  using encfs. The dropbox mechanism of a conflict notification is to
+  add something to the end of the filename. Because raw encfs filenames
+  are encrypted, this breaks its raw encfs filename encoding, and so
+  encfs ignores it, and it does not appear in the mounted encfs.
+
+  When this script is run for conflict resolution, it will perform a
+  rename of the broken raw encfs filename, so that the conflicted file
+  with proper dropbox notification will appear properly in the mounted
+  encfs. 
 
