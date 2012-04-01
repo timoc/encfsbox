@@ -30,7 +30,7 @@ CMD=$1
 # set bash to exit if using an ininitialised variable
 set -o nounset
 # set exit if command returns error state - stop snowballing
-set -o errexit
+# set -o errexit
 
 # script defaults
 # dropbox helper
@@ -50,8 +50,6 @@ _SILENTLY=""
  _BOX="status"
 # encfs operation to perform.
 _CMD=""
-declare _USAGE="" _SILENTLY="" _BOX="status" _CMD=""
-declare _USAGE="" _SILENTLY="" _BOX="status" _CMD=""
 
 # parse command
 if [ -e "${MNT_SEARCH}" ] ; then 
@@ -214,7 +212,7 @@ if [ -e "${MNT_SEARCH}" ] ; then
 #        else
 #            echo "$(cat $LOCKFILE)"
         fi
-    fi 
+    fi
 else
     echo "!! dropbox directory does not exist !!"
     echo \$DROPBOX_DIR=${MNT_SEARCH}
