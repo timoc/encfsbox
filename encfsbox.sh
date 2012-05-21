@@ -122,7 +122,7 @@ if [ -e "${MNT_SEARCH}" ] ; then
                         echo "!! Conflicted Files found in ${ENCFS} !!"
                     fi
                     # if not mounted
-                    if [[ "${MNTED}" == "" ]] ; then a
+                    if [[ "${MNTED}" == "" ]] ; then
                         # if directory has no encfs filesystem, encfs
                         # assumes you want to create it, so give 'best'
                         # dropbox encfs settings hint
